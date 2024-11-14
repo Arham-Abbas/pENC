@@ -5,34 +5,34 @@ from logic import process_audio_files
 # Process audio files and get the data
 all_data = process_audio_files()
 
-# Define batch size for plotting
-batch_size = 3
-
 # Create a figure for plotting
-fig, axs = plt.subplots(3, batch_size, figsize=(15, 10))
+fig, axs = plt.subplots(5, 1, figsize=(10, 15))
 fig.tight_layout(pad=3.0)
 
 # Function to update the plots
-def update_plots(start_idx):
-    for i in range(batch_size):
-        if start_idx + i < len(all_data):
-            audio_file, audio_data, inverted_audio, merged_audio = all_data[start_idx + i]
-            
-            axs[0, i].cla()
-            axs[0, i].plot(audio_data)
-            axs[0, i].set_title(f'Original Audio: {audio_file}')
-            
-            axs[1, i].cla()
-            axs[1, i].plot(inverted_audio)
-            axs[1, i].set_title(f'Inverted Audio: {audio_file}')
-            
-            axs[2, i].cla()
-            axs[2, i].plot(merged_audio)
-            axs[2, i].set_title(f'Merged Audio: {audio_file}')
-        else:
-            axs[0, i].cla()
-            axs[1, i].cla()
-            axs[2, i].cla()
+def update_plots(index):
+    if index < len(all_data):
+        audio_file, audio_data, inverted_audio, stereo_audio = all_data[index]
+        
+        axs[0].cla()
+        axs[0].plot(audio_data)
+        axs[0].set_title(f'Original Audio: {audio_file}')
+        
+        axs[1].cla()
+        axs[1].plot(inverted_audio)
+        axs[1].set_title(f'Inverted Audio: {audio_file}')
+        
+        axs[2].cla()
+        axs[2].plot(audio_data + inverted_audio)
+        axs[2].set_title(f'Merged Audio: {audio_file}')
+        
+        axs[3].cla()
+        axs[3].plot(stereo_audio[:, 0])
+        axs[3].set_title(f'Mixed Audio (Left Channel): {audio_file}')
+        
+        axs[4].cla()
+        axs[4].plot(stereo_audio[:, 1])
+        axs[4].set_title(f'Mixed Audio (Right Channel): {audio_file}')
 
     fig.canvas.draw()
 
@@ -47,13 +47,13 @@ current_idx = [0]
 
 # Callback functions for buttons
 def next_page(_):
-    if current_idx[0] + batch_size < len(all_data):
-        current_idx[0] += batch_size
+    if current_idx[0] + 1 < len(all_data):
+        current_idx[0] += 1
         update_plots(current_idx[0])
 
 def prev_page(_):
-    if current_idx[0] - batch_size >= 0:
-        current_idx[0] -= batch_size
+    if current_idx[0] - 1 >= 0:
+        current_idx[0] -= 1
         update_plots(current_idx[0])
 
 bnext.on_clicked(next_page)
