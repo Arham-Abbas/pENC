@@ -1,0 +1,8 @@
+__pycache__
+.vs
+.vscode/settings.json
+build
+dataset/inverted
+dataset/merged
+inverse_wave.c*
+inverse_wave.obj

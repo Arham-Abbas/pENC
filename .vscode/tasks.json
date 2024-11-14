@@ -1,0 +1,21 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Cython",
+            "type": "shell",
+            "command": "python3.13",
+            "args": [
+                "setup.py",
+                "build_ext",
+                "--inplace"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "detail": "Generated task for compiling Cython using setup.py"
+        }
+    ]
+}
