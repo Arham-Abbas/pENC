@@ -2,8 +2,5 @@ __pycache__
 .vs
 .vscode/settings.json
 build
-dataset/inverted
-dataset/merged
-dataset/mixed
 inverse_wave.c*
 inverse_wave.obj

@@ -2,10 +2,18 @@ import pandas as pd
 import soundfile as sf
 import numpy as np
 import os
+import win32com.client
 from inverse_wave import invert_wave  # Ensure this import points to the compiled Cython module
 
-# Paths to directories
-dataset_dir = 'dataset'
+# Function to resolve the shortcut path
+def resolve_shortcut(shortcut_path):
+    shell = win32com.client.Dispatch("WScript.Shell")
+    shortcut = shell.CreateShortcut(shortcut_path)
+    return shortcut.Targetpath
+
+# Resolve the path to the dataset folder using the shortcut
+shortcut_path = 'dataset.lnk'
+dataset_dir = resolve_shortcut(shortcut_path)
 csv_path = os.path.join(dataset_dir, 'metadata.csv')
 audio_dir = os.path.join(dataset_dir, 'original')
 inverted_dir = os.path.join(dataset_dir, 'inverted')
