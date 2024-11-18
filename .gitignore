@@ -3,4 +3,7 @@ __pycache__
 .vscode/settings.json
 build
 inverse_wave.c*
-inverse_wave.obj
+mfcc_extractor.c*
+*.obj
+audio_classifier_model.pkl
+pENC.code-workspace
