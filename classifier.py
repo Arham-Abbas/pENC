@@ -11,11 +11,11 @@ import ctypes
 import concurrent.futures
 
 # Add the current directory and necessary DLL directories to the DLL search path
-os.add_dll_directory(os.getcwd() + r"\build\bin\Debug")
+os.add_dll_directory(os.getcwd() + r"\build\bin\Release")
 os.add_dll_directory(r"C:\Windows\System32")
 
 # Load the shared library
-dll_path = os.path.join(os.getcwd(), r"build\bin\Debug\mfcc_extractor.dll")
+dll_path = os.path.join(os.getcwd(), r"build\bin\Release\mfcc_extractor.dll")
 mfcc_lib = ctypes.CDLL(dll_path)
 
 # Define the return type and argument types of the C++ function
@@ -56,8 +56,7 @@ def extract_features(file_path):
     try:
         mfccs = extract_mfcc(signal, sample_rate, file_name=os.path.basename(file_path))
         return np.mean(mfccs, axis=0)
-    except Exception as e:
-        print(f"Error extracting MFCC for {file_path}: {e}")
+    except Exception:
         return None
 
 # Function to process a single file and extract features
@@ -81,7 +80,7 @@ def load_and_split_data(csv_path, test_size=0.2, random_state=42):
         # Extract features and save to file
         df = pd.read_csv(csv_path)
         with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
-            results = list(executor.map(process_file, [row for _, row in df.iterrows()]))
+            results = list(executor.map(process_file, df.to_dict('records')))
         
         # Filter out any None results from missing files or errors
         results = [res for res in results if res[0] is not None]
