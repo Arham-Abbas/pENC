@@ -2,57 +2,84 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build Cython",
+            "label": "Generate CMake Files",
             "type": "shell",
-            "command": "python3.13",
+            "command": "cmake",
             "args": [
-                "setup.py",
-                "build_ext",
-                "--inplace",
-                "--build-lib", "${workspaceFolder}/build/lib",
-                "--build-temp", "${workspaceFolder}/build/temp"
+                "-S", ".",
+                "-B", "build"
             ],
             "group": "build",
             "problemMatcher": [],
-            "detail": "Generated task for compiling Cython using setup.py"
+            "detail": "Generate CMake files"
         },
         {
-            "type": "cppbuild",
-            "label": "C/C++: cl.exe build mfcc_extractor",
-            "command": "cl.exe",
+            "label": "Build CythonOnly",
+            "type": "shell",
+            "command": "cmake",
             "args": [
-                "/Zi",
-                "/EHsc",
-                "/LD",  // Specify to build a DLL
-                "/I\"C:\\Program Files\\OpenCL\\include\"",  // Include OpenCL headers
-                "${workspaceFolder}/mfcc_extractor.cpp",
-                "/Fo${workspaceFolder}/build/temp/mfcc_extractor.obj",  // Output object files directory
-                "/link",
-                "/DLL",  // Specify that we are creating a DLL
-                "/OUT:${workspaceFolder}/build/lib/mfcc_extractor.dll",  // Output DLL name
-                "/LIBPATH:\"C:\\Program Files\\OpenCL\\lib\"",  // Specify library path
-                "OpenCL.lib" // Explicitly link OpenCL library
+                "--build", "build",
+                "--target", "CythonOnly"
             ],
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": [
-                "$msCompile"
-            ],
+            "dependsOn": "Generate CMake Files",
             "group": "build",
-            "detail": "Task for building C++ file as DLL."
+            "problemMatcher": [],
+            "detail": "Build CythonOnly target"
         },
         {
-            "label": "Build All",
-            "dependsOn": [
-                "Build Cython",
-                "C/C++: cl.exe build mfcc_extractor"
+            "label": "Build Debug",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "build",
+                "--target", "mfcc_extractor",
+                "--config", "Debug"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "problemMatcher": []
+            "dependsOn": "Generate CMake Files",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Build Debug target"
+        },
+        {
+            "label": "Build Release",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "build",
+                "--target", "mfcc_extractor",
+                "--config", "Release"
+            ],
+            "dependsOn": "Generate CMake Files",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Build Release target"
+        },
+        {
+            "label": "Build CythonDebug",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "build",
+                "--target", "CythonDebug"
+            ],
+            "dependsOn": "Generate CMake Files",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Build CythonDebug target"
+        },
+        {
+            "label": "Build CythonRelease",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build", "build",
+                "--target", "CythonRelease"
+            ],
+            "dependsOn": "Generate CMake Files",
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Build CythonRelease target"
         }
-    ]
+    ],
+    "default": "Build CythonDebug"
 }

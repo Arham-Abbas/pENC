@@ -6,7 +6,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/classifier.py",
-            "preLaunchTask": "C/C++: cl.exe build mfcc_extractor"
+            "preLaunchTask": "Build Debug"
         },
         {
             "name": "C++: Attach to Python",
@@ -19,7 +19,7 @@
             "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/visualization.py",
-            "preLaunchTask": "Build Cython"
+            "preLaunchTask": "Build CythonOnly"
         }
     ],
     "compounds": [
@@ -36,7 +36,7 @@
             "type": "promptString",
             "id": "dllPath",
             "description": "Path to your DLL",
-            "default": "${workspaceFolder}/mfcc_extractor.dll"
+            "default": "${workspaceFolder}\\build\\bin\\Debug\\mfcc_extractor.dll"
         }
     ]
 }

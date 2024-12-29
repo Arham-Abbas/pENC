@@ -11,11 +11,11 @@ import ctypes
 import concurrent.futures
 
 # Add the current directory and necessary DLL directories to the DLL search path
-os.add_dll_directory(os.getcwd() + r"\build\lib")
+os.add_dll_directory(os.getcwd() + r"\build\bin\Debug")
 os.add_dll_directory(r"C:\Windows\System32")
 
 # Load the shared library
-dll_path = os.path.join(os.getcwd(), r"build\lib\mfcc_extractor.dll")
+dll_path = os.path.join(os.getcwd(), r"build\bin\Debug\mfcc_extractor.dll")
 mfcc_lib = ctypes.CDLL(dll_path)
 
 # Define the return type and argument types of the C++ function
