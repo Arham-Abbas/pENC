@@ -7,73 +7,121 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 import joblib
 from shortcut import resolve_shortcut
-from mfcc_extractor import extract_mfcc
+import ctypes
+import concurrent.futures
+
+# Add the current directory and necessary DLL directories to the DLL search path
+os.add_dll_directory(os.getcwd() + r"\build\lib")
+os.add_dll_directory(r"C:\Windows\System32")
+
+# Load the shared library
+dll_path = os.path.join(os.getcwd(), r"build\lib\mfcc_extractor.dll")
+mfcc_lib = ctypes.CDLL(dll_path)
+
+# Define the return type and argument types of the C++ function
+mfcc_lib.extract_mfcc.restype = None
+mfcc_lib.extract_mfcc.argtypes = [
+    ctypes.POINTER(ctypes.c_double), 
+    ctypes.c_int, 
+    ctypes.c_int, 
+    ctypes.c_int, 
+    ctypes.POINTER(ctypes.c_double),
+    ctypes.c_char_p
+]
+
+# Function to extract features from an audio file
+def extract_mfcc(signal, sample_rate, num_cepstra=13, file_name=None):
+    signal = np.array(signal, dtype=np.float64)
+    num_frames = len(signal) // 512
+    mfccs = np.zeros((num_frames, num_cepstra), dtype=np.float64)
+    signal_ctypes = signal.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    mfccs_ctypes = mfccs.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+    mfcc_lib.extract_mfcc(signal_ctypes, signal.size, sample_rate, num_cepstra, mfccs_ctypes, file_name.encode('utf-8'))
+    return mfccs
 
 # Resolve the path to the dataset folder using the shortcut
 shortcut_path = 'dataset.lnk'
 dataset_dir = resolve_shortcut(shortcut_path)
-print(f"Resolved dataset directory: {dataset_dir}")
 
 # Path to the classifier CSV file
-csv_file = os.path.join(dataset_dir, 'Classifier.csv')
-print(f"Classifier CSV path: {csv_file}")
-
+csv_file = os.path.join(dataset_dir, 'classifier.csv')
 audio_dir = os.path.join(dataset_dir, 'classifier')
 
-# Function to extract features from an audio file using the compiled Cython module
+# Path to save the extracted features
+features_file = 'extracted_features.pkl'
+
+# Function to extract features from an audio file
 def extract_features(file_path):
     signal, sample_rate = sf.read(file_path)
-    mfccs = extract_mfcc(signal, sample_rate)
-    return np.mean(mfccs, axis=0)
+    try:
+        mfccs = extract_mfcc(signal, sample_rate, file_name=os.path.basename(file_path))
+        return np.mean(mfccs, axis=0)
+    except Exception as e:
+        print(f"Error extracting MFCC for {file_path}: {e}")
+        return None
+
+# Function to process a single file and extract features
+def process_file(row):
+    file_name = f"{row['fname']}.wav"
+    file_path = os.path.join(audio_dir, file_name)
+    if os.path.exists(file_path):
+        features = extract_features(file_path)
+        if features is not None:
+            return features, row['label']
+    return None, None
 
 # Function to load and split data from the CSV file
 def load_and_split_data(csv_path, test_size=0.2, random_state=42):
-    df = pd.read_csv(csv_path)
-    X = []
-    y = []
-    missing_files = 0
-    for _, row in df.iterrows():
-        file_name = f"{row['fname']}.wav"
-        file_path = os.path.join(audio_dir, file_name)
-        if os.path.exists(file_path):
-            features = extract_features(file_path)
-            X.append(features)
-            y.append(row['label'])
-        else:
-            print(f"File not found: {file_path}")
-            missing_files += 1
-    print(f"Total missing files: {missing_files}")
-    
-    # Convert lists to arrays
-    X = np.array(X)
-    y = np.array(y)
+    if os.path.exists(features_file):
+        # Load features from file
+        data = joblib.load(features_file)
+        features = data['features']
+        labels = data['labels']
+    else:
+        # Extract features and save to file
+        df = pd.read_csv(csv_path)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+            results = list(executor.map(process_file, [row for _, row in df.iterrows()]))
+        
+        # Filter out any None results from missing files or errors
+        results = [res for res in results if res[0] is not None]
+        
+        features, labels = zip(*results)
+        
+        # Convert lists to arrays
+        features = np.array(features)
+        labels = np.array(labels)
+        
+        # Save features to file
+        joblib.dump({'features': features, 'labels': labels}, features_file)
     
     # Split the data into training and testing sets
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-    return X_train, X_test, y_train, y_test
+    x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=test_size, random_state=random_state)
+    return x_train, x_test, y_train, y_test
 
 # Load and split the data
-X_train, X_test, y_train, y_test = load_and_split_data(csv_file)
+try:
+    x_train, x_test, y_train, y_test = load_and_split_data(csv_file)
+except Exception as e:
+    print(f"Critical error loading and splitting data: {e}")
+    exit(1)
 
 # Ensure the data is not empty and has the correct shape
-print(f"Number of training samples: {len(X_train)}")
-print(f"Number of testing samples: {len(X_test)}")
-
-if X_train.size == 0 or y_train.size == 0:
+if x_train.size == 0 or y_train.size == 0:
     raise ValueError("Training data is empty. Please check the CSV file and audio files.")
 
-if X_train.ndim == 1:
-    X_train = X_train.reshape(-1, 1)
+if x_train.ndim == 1:
+    x_train = x_train.reshape(-1, 1)
 
-if X_test.ndim == 1:
-    X_test = X_test.reshape(-1, 1)
+if x_test.ndim == 1:
+    x_test = x_test.reshape(-1, 1)
 
 # Train a classifier model
 model = RandomForestClassifier(n_estimators=100, random_state=42, min_samples_leaf=2, max_features='sqrt')
-model.fit(X_train, y_train)
+model.fit(x_train, y_train)
 
 # Test the model
-test_predictions = model.predict(X_test)
+test_predictions = model.predict(x_test)
 test_accuracy = accuracy_score(y_test, test_predictions)
 print(f'Test Accuracy: {test_accuracy:.2f}')
 

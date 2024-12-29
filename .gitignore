@@ -1,9 +1,11 @@
 __pycache__
-.vs
+.vscode/compile_commands.json
 .vscode/settings.json
 build
-inverse_wave.c*
-mfcc_extractor.c*
-*.obj
 audio_classifier_model.pkl
+dataset.lnk
+inverse_wave.cp*
+mfcc_extractor.exp
+mfcc_extractor.lib
 pENC.code-workspace
+vc140.pdb

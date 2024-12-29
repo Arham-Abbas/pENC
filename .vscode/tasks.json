@@ -8,14 +8,51 @@
             "args": [
                 "setup.py",
                 "build_ext",
-                "--inplace"
+                "--inplace",
+                "--build-lib", "${workspaceFolder}/build/lib",
+                "--build-temp", "${workspaceFolder}/build/temp"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Generated task for compiling Cython using setup.py"
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: cl.exe build mfcc_extractor",
+            "command": "cl.exe",
+            "args": [
+                "/Zi",
+                "/EHsc",
+                "/LD",  // Specify to build a DLL
+                "/I\"C:\\Program Files\\OpenCL\\include\"",  // Include OpenCL headers
+                "${workspaceFolder}/mfcc_extractor.cpp",
+                "/Fo${workspaceFolder}/build/temp/mfcc_extractor.obj",  // Output object files directory
+                "/link",
+                "/DLL",  // Specify that we are creating a DLL
+                "/OUT:${workspaceFolder}/build/lib/mfcc_extractor.dll",  // Output DLL name
+                "/LIBPATH:\"C:\\Program Files\\OpenCL\\lib\"",  // Specify library path
+                "OpenCL.lib" // Explicitly link OpenCL library
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$msCompile"
+            ],
+            "group": "build",
+            "detail": "Task for building C++ file as DLL."
+        },
+        {
+            "label": "Build All",
+            "dependsOn": [
+                "Build Cython",
+                "C/C++: cl.exe build mfcc_extractor"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
-            "problemMatcher": [],
-            "detail": "Generated task for compiling Cython using setup.py"
+            "problemMatcher": []
         }
     ]
 }

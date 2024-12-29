@@ -1,9 +1,12 @@
+# distutils: language=c++
+# cython: language_level=3
+
 # Import the required libraries
 import numpy as np
 cimport numpy as np
 
-# Set the language level to 3 (Python 3)
-#cython: language_level=3
+# Use the correct NumPy API
+np.import_array()
 
 def invert_wave(np.ndarray[np.float64_t, ndim=1] audio_data):
     cdef int i

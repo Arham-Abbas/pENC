@@ -64,7 +64,13 @@ update_plots(0)
 
 # Maximize the window
 manager = plt.get_current_fig_manager()
-manager.window.state('zoomed')  # For Tkinter backend
+try:
+    manager.window.state('zoomed')  # For Tkinter backend
+except AttributeError:
+    try:
+        manager.full_screen_toggle()  # For other backends
+    except AttributeError:
+        pass
 
 # Show the plot
 plt.show()

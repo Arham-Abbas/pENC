@@ -1,0 +1,42 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Launch Classifier",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/classifier.py",
+            "preLaunchTask": "C/C++: cl.exe build mfcc_extractor"
+        },
+        {
+            "name": "C++: Attach to Python",
+            "type": "cppvsdbg",
+            "request": "attach",
+            "processId": "${command:pickProcess}",
+        },
+        {
+            "name": "Python: Launch Visualization",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/visualization.py",
+            "preLaunchTask": "Build Cython"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch Classifier with C++ Debugger",
+            "configurations": [
+                "Python: Launch Classifier",
+                "C++: Attach to Python"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "type": "promptString",
+            "id": "dllPath",
+            "description": "Path to your DLL",
+            "default": "${workspaceFolder}/mfcc_extractor.dll"
+        }
+    ]
+}
