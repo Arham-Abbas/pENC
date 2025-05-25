@@ -50,8 +50,7 @@ target_link_libraries(mfcc_extractor OpenCL.lib)
 # Set the output name for the DLL
 set_target_properties(mfcc_extractor PROPERTIES OUTPUT_NAME "mfcc_extractor")
 
-# Add configurations
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release;CythonOnly;CythonDebug;CythonRelease" CACHE STRING "" FORCE)
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 
 # Debug configuration for mfcc_extractor
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi /EHsc /LD /MDd")
@@ -63,42 +62,16 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /EHsc /LD /MD")
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /OPT:REF /OPT:ICF /LTCG")
 set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
-# Set shared linker flags for custom configurations
-set(CMAKE_SHARED_LINKER_FLAGS_CYTHONONLY "${CMAKE_SHARED_LINKER_FLAGS}")
-set(CMAKE_SHARED_LINKER_FLAGS_CYTHONDEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG}")
-set(CMAKE_SHARED_LINKER_FLAGS_CYTHONRELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
 
-# Custom target to build Cython module
-add_custom_target(CythonOnly ALL
+
+add_custom_target(Cython ALL
     COMMAND python3.13 setup.py build_ext --inplace --build-lib ${CMAKE_BINARY_DIR}/lib --build-temp ${CMAKE_BINARY_DIR}/temp
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-# Custom target to build Cython module and mfcc_extractor in Debug mode
-add_custom_target(CythonDebug ALL
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target CythonOnly
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target mfcc_extractor --config Debug
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
 
-# Custom target to build Cython module and mfcc_extractor in Release mode
-add_custom_target(CythonRelease ALL
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target CythonOnly
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target mfcc_extractor --config Release
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
 
-# Custom target to build mfcc_extractor in Debug mode
-add_custom_target(Debug ALL
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target mfcc_extractor --config Debug
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
 
-# Custom target to build mfcc_extractor in Release mode
-add_custom_target(Release ALL
-    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target mfcc_extractor --config Release
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
 
 # Set the default generator to Visual Studio 2022
 if(NOT CMAKE_GENERATOR)

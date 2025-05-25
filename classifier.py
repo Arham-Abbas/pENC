@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd
 import numpy as np
 import soundfile as sf
@@ -10,12 +11,18 @@ from shortcut import resolve_shortcut
 import ctypes
 import concurrent.futures
 
-# Add the current directory and necessary DLL directories to the DLL search path
-os.add_dll_directory(os.getcwd() + r"\build\bin\Release")
+
+# Determine build type: Debug (F5) or Release (Ctrl+F5)
+if sys.gettrace() is not None:
+    build_type = "Debug"
+else:
+    build_type = "Release"
+
+dll_dir = os.path.join(os.getcwd(), "build", "bin", build_type)
+os.add_dll_directory(dll_dir)
 os.add_dll_directory(r"C:\Windows\System32")
 
-# Load the shared library
-dll_path = os.path.join(os.getcwd(), r"build\bin\Release\mfcc_extractor.dll")
+dll_path = os.path.join(dll_dir, "mfcc_extractor.dll")
 mfcc_lib = ctypes.CDLL(dll_path)
 
 # Define the return type and argument types of the C++ function
@@ -79,7 +86,7 @@ def load_and_split_data(csv_path, test_size=0.2, random_state=42):
     else:
         # Extract features and save to file
         df = pd.read_csv(csv_path)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             results = list(executor.map(process_file, df.to_dict('records')))
         
         # Filter out any None results from missing files or errors

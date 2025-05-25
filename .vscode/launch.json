@@ -5,8 +5,7 @@
             "name": "Python: Launch Classifier",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/classifier.py",
-            "preLaunchTask": "Build Debug"
+            "program": "${workspaceFolder}/classifier.py"
         },
         {
             "name": "C++: Attach to Python",
@@ -18,8 +17,7 @@
             "name": "Python: Launch Visualization",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/visualization.py",
-            "preLaunchTask": "Build CythonOnly"
+            "program": "${workspaceFolder}/visualization.py"
         }
     ],
     "compounds": [
