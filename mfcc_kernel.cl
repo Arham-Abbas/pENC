@@ -5,19 +5,6 @@ __kernel void hamming_window(__global double* window, int N) {
     }
 }
 
-__kernel void fft(__global double* input, __global double2* output, int N) {
-    int k = get_global_id(0);
-    if (k < N) {
-        double real = 0.0;
-        double imag = 0.0;
-        for (int n = 0; n < N; n++) {
-            double angle = -2.0 * M_PI * k * n / N;
-            real += input[n] * cos(angle);
-            imag += input[n] * sin(angle);
-        }
-        output[k] = (double2)(real, imag);
-    }
-}
 
 __kernel void mel_filter_kernel(__global double* pow_frames, __global double* fbank, __global double* filter_banks, int num_frames, int n_mels, int n_fft) {
     int i = get_global_id(0);

@@ -4,7 +4,8 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
-                "C:/Program Files/OpenCL/include"
+                "C:/Program Files/OpenCL/include",
+                "C:/Program Files/clFFT/include"
             ],
             "defines": [
                 "_DEBUG",

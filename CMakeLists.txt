@@ -30,22 +30,27 @@ endif()
 # Set the OpenCL version
 add_definitions(-DCL_HPP_TARGET_OPENCL_VERSION=300)
 
+
 # Include directories
 include_directories(${Python3_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories("C:/Program Files/OpenCL/include")
+include_directories("C:/Program Files/clFFT/include")
+
 
 # Link directories
 link_directories("C:/Program Files/OpenCL/lib")
+link_directories("C:/Program Files/clFFT/lib64/import")
 
 # Output directories
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
+
 # Add the mfcc_extractor library
 add_library(mfcc_extractor SHARED mfcc_extractor.cpp mfcc_kernel.cl)
-target_link_libraries(mfcc_extractor OpenCL.lib)
+target_link_libraries(mfcc_extractor OpenCL.lib clFFT.lib)
 
 # Set the output name for the DLL
 set_target_properties(mfcc_extractor PROPERTIES OUTPUT_NAME "mfcc_extractor")

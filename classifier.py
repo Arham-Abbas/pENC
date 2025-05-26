@@ -21,6 +21,7 @@ else:
 dll_dir = os.path.join(os.getcwd(), "build", "bin", build_type)
 os.add_dll_directory(dll_dir)
 os.add_dll_directory(r"C:\Windows\System32")
+os.add_dll_directory(r"C:\Program Files\clFFT\bin")
 
 dll_path = os.path.join(dll_dir, "mfcc_extractor.dll")
 mfcc_lib = ctypes.CDLL(dll_path)
