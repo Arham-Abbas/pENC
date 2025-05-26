@@ -1,4 +1,5 @@
 #include <CL/opencl.hpp>
+#include <clFFT.h>
 #include <vector>
 #include <cmath>
 #include <iostream>
@@ -83,21 +84,32 @@ extern "C" {
             }
             std::cout << "Frame multiplication with Hamming window completed." << std::endl;
 
-            std::cout << "Starting FFT and Power Spectrum computation..." << std::endl;
-            // FFT and Power Spectrum using OpenCL
+
+            std::cout << "Starting FFT and Power Spectrum computation (clFFT)..." << std::endl;
             std::vector<std::vector<double>> pow_frames(num_frames, std::vector<double>(n_fft / 2 + 1));
             std::vector<std::complex<double>> fft_output(n_fft / 2 + 1);
 
-            cl::Kernel fft_kernel(program, "fft");
-            cl::Buffer input_buffer(context, CL_MEM_READ_ONLY, sizeof(double) * frame_length);
-            cl::Buffer output_buffer(context, CL_MEM_WRITE_ONLY, sizeof(cl_double2) * (n_fft / 2 + 1));
+            // clFFT setup (single plan reused for all frames)
+            clfftSetupData fftSetup;
+            clfftInitSetupData(&fftSetup);
+            clfftSetup(&fftSetup);
+
+            clfftPlanHandle planHandle;
+            size_t clLengths[1] = { static_cast<size_t>(frame_length) };
+            clfftCreateDefaultPlan(&planHandle, context(), CLFFT_1D, clLengths);
+            clfftSetPlanPrecision(planHandle, CLFFT_DOUBLE);
+            clfftSetLayout(planHandle, CLFFT_REAL, CLFFT_HERMITIAN_INTERLEAVED);
+            clfftSetResultLocation(planHandle, CLFFT_OUTOFPLACE);
+            clfftBakePlan(planHandle, 1, &queue(), nullptr, nullptr);
+
+            cl::Buffer input_buffer(context, CL_MEM_READ_WRITE, sizeof(double) * frame_length);
+            cl::Buffer output_buffer(context, CL_MEM_READ_WRITE, sizeof(cl_double2) * (n_fft / 2 + 1));
 
             for (int i = 0; i < num_frames; i++) {
                 queue.enqueueWriteBuffer(input_buffer, CL_TRUE, 0, sizeof(double) * frame_length, frames[i].data());
-                fft_kernel.setArg(0, input_buffer);
-                fft_kernel.setArg(1, output_buffer);
-                fft_kernel.setArg(2, frame_length);
-                queue.enqueueNDRangeKernel(fft_kernel, cl::NullRange, cl::NDRange(frame_length));
+                cl_mem in_buf = input_buffer();
+                cl_mem out_buf = output_buffer();
+                clfftEnqueueTransform(planHandle, CLFFT_FORWARD, 1, &queue(), 0, nullptr, nullptr, &in_buf, &out_buf, nullptr);
                 queue.finish();
                 std::vector<cl_double2> output(n_fft / 2 + 1);
                 queue.enqueueReadBuffer(output_buffer, CL_TRUE, 0, sizeof(cl_double2) * (n_fft / 2 + 1), output.data());
@@ -111,7 +123,10 @@ extern "C" {
                     pow_frames[i][j] = (1.0 / n_fft) * (mag * mag);
                 }
             }
-            std::cout << "FFT and Power Spectrum computation completed." << std::endl;
+
+            clfftDestroyPlan(&planHandle);
+            clfftTeardown();
+            std::cout << "FFT and Power Spectrum computation (clFFT) completed." << std::endl;
 
             std::cout << "Starting filter bank computation..." << std::endl;
             // Compute filter banks
