@@ -19,8 +19,6 @@
 
 ## Project Structure
 
-pENC/
-
 ````text
 pENC/
   ├── classifier.py           # Main Python script for feature extraction and classification
